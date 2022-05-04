@@ -11,6 +11,7 @@
 using namespace std;
 
 const int MAX_RESULT_DOCUMENT_COUNT = 5;
+const double PRECISION = 1e-6;
 
 string ReadLine() {
     string s;
@@ -82,15 +83,15 @@ public:
             });
     }
 
-    template <typename RawQuery, typename DocumentPredicate>
-    vector<Document> FindTopDocuments(const RawQuery& raw_query,
+    template <typename DocumentPredicate>
+    vector<Document> FindTopDocuments(const string& raw_query,
                                       DocumentPredicate document_predicate) const {
         const Query query = ParseQuery(raw_query);
         auto matched_documents = FindAllDocuments(query, document_predicate);
         
         sort(matched_documents.begin(), matched_documents.end(),
              [](const Document& lhs, const Document& rhs) {
-                if (abs(lhs.relevance - rhs.relevance) < 1e-6) {
+                if (abs(lhs.relevance - rhs.relevance) < PRECISION) {
                     return lhs.rating > rhs.rating;
                 } else {
                     return lhs.relevance > rhs.relevance;
@@ -224,8 +225,8 @@ private:
         return log(GetDocumentCount() * 1.0 / word_to_document_freqs_.at(word).size());
     }
 
-    template <typename RawQuery, typename DocumentPredicate>
-    vector<Document> FindAllDocuments(const RawQuery& query,
+    template <typename DocumentPredicate>
+    vector<Document> FindAllDocuments(const Query& query,
                                       DocumentPredicate document_predicate) const {
         map<int, double> document_to_relevance;
         for (const string& word : query.plus_words) {
