@@ -345,7 +345,7 @@ void TestExcludeMinusWordsFromSearchResults() {
         server.AddDocument(first_doc_id, first_content, DocumentStatus::ACTUAL, first_ratings);
         server.AddDocument(second_doc_id, second_content, DocumentStatus::ACTUAL, second_ratings);
         ASSERT_HINT(server.FindTopDocuments("black dog -big"s).empty(), "Documents which contain minus words must be exclude from documents"s);
-        ASSERT_HINT(!server.FindTopDocuments("black dog"s).empty(), "Document should be found if it does'n contain minus words"s);
+        ASSERT_HINT(!server.FindTopDocuments("black dog"s).empty(), "Document should be found if it doesn't contain minus words"s);
     }
 }
 
