@@ -334,14 +334,18 @@ void TestExcludeStopWordsFromAddedDocumentContent() {
 }
 
 void TestExcludeMinusWordsFromSearchResults() {
-    const int doc_id = 50;
-    const string content = "big black dog"s;
-    const vector<int> ratings = {3, 5, -2};
+    const int first_doc_id = 50;
+    const string first_content = "big black dog"s;
+    const vector<int> first_ratings = {3, 5, -2};
+    const int second_doc_id = 50;
+    const string second_content = "tiny black kitty"s;
+    const vector<int> second_ratings = {4, 9, -8};
     {
         SearchServer server;
-        server.AddDocument(doc_id, content, DocumentStatus::ACTUAL, ratings);
+        server.AddDocument(first_doc_id, first_content, DocumentStatus::ACTUAL, first_ratings);
+        server.AddDocument(second_doc_id, second_content, DocumentStatus::ACTUAL, second_ratings);
         ASSERT_HINT(server.FindTopDocuments("black dog -big"s).empty(), "Documents which contain minus words must be exclude from documents"s);
-        ASSERT_HINT(!server.FindTopDocuments("black dog"s).empty(), "Document should be found by request without minus words"s);
+        ASSERT_HINT(!server.FindTopDocuments("black dog"s).empty(), "Document should be found if it does'n contain minus words"s);
     }
 }
 
@@ -353,7 +357,7 @@ void TestDocumentsCount() {
         SearchServer server;
         ASSERT_HINT(server.GetDocumentCount() == 0, "Count of documents by default must be zero"s);
         server.AddDocument(doc_id, content, DocumentStatus::ACTUAL, ratings);
-        ASSERT_HINT(server.GetDocumentCount() > 0, "Count of documents must be not zero before adding of document"s);
+        ASSERT_HINT(server.GetDocumentCount() == 1, "Count of documents must be not zero before adding of document"s);
 
     }
 }
