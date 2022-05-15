@@ -337,15 +337,21 @@ void TestExcludeMinusWordsFromSearchResults() {
     const int first_doc_id = 50;
     const string first_content = "big black dog"s;
     const vector<int> first_ratings = {3, 5, -2};
-    const int second_doc_id = 50;
+    const int second_doc_id = 51;
     const string second_content = "tiny black kitty"s;
     const vector<int> second_ratings = {4, 9, -8};
+    const string raw_query = "black dog -big"s;
     {
         SearchServer server;
         server.AddDocument(first_doc_id, first_content, DocumentStatus::ACTUAL, first_ratings);
+        ASSERT_HINT(server.FindTopDocuments(raw_query).empty(), "Documents which contain minus words must be exclude from documents"s);
+    }
+
+    {
+        SearchServer server;
         server.AddDocument(second_doc_id, second_content, DocumentStatus::ACTUAL, second_ratings);
-        ASSERT_HINT(server.FindTopDocuments("black dog -big"s).empty(), "Documents which contain minus words must be exclude from documents"s);
-        ASSERT_HINT(!server.FindTopDocuments("black dog"s).empty(), "Document should be found if it doesn't contain minus words"s);
+        ASSERT_HINT(!server.FindTopDocuments(raw_query).empty(), "Document should be found if it doesn't contain minus words"s);
+
     }
 }
 
@@ -462,7 +468,7 @@ void TestFilterByStatus() {
 }
 
 void TestCorrectRelevanceDocument() {
-    const int first_doc_id = 0;
+    const int first_doc_id = 6;
     const string first_doc_content = "a black cat and a fashionable collar"s;
     const vector<int> first_doc_ratings = {8, -3};
     const int second_doc_id = 3;
@@ -510,7 +516,7 @@ void TestCorrectRelevanceDocument() {
             }
         }
 
-        Document server_document;
+        Document server_document = {};
         for (const auto& document : documents) {
             if (document.id == first_doc_id)
                 server_document = document;
