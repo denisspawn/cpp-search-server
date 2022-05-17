@@ -85,7 +85,7 @@ public:
         }
         vector<string> words;
         if (!SplitIntoWordsNoStop(document, words)) {
-            throw invalid_argument("Words should not contain deprecated characters [0, 31]"s);
+            throw invalid_argument("Words should not contain forbidden characters [0, 31]"s);
         }
 
         const double inv_word_count = 1.0 / words.size();
@@ -103,7 +103,7 @@ public:
                                                 DocumentPredicate document_predicate) const {
         Query query;
         if (!ParseQuery(raw_query, query)) {
-            throw invalid_argument("String of query contains deprecated characters [0, 31] or '--' or empty string after '-'"s);
+            throw invalid_argument("String of query contains forbidden characters [0, 31] or '--' or empty string after '-'"s);
         }
         auto matched_documents = FindAllDocuments(query, document_predicate);
 
@@ -148,7 +148,7 @@ public:
                                                                   int document_id) const {
         Query query;
         if (!ParseQuery(raw_query, query)) {
-            throw invalid_argument("String of query contains deprecated characters [0, 31] or '--' or empty string after '-'"s);
+            throw invalid_argument("String of query contains forbidden characters [0, 31] or '--' or empty string after '-'"s);
         }
         vector<string> matched_words;
         for (const string& word : query.plus_words) {
@@ -200,7 +200,7 @@ private:
         for (const string& str : strings) {
             if (!str.empty()) {
                 if (!IsValidWord(str))
-                    throw invalid_argument("Words should not contain deprecated characters [0, 31]"s);
+                    throw invalid_argument("Words should not contain forbidden characters [0, 31]"s);
                 non_empty_strings.insert(str);
             }
         }
