@@ -1,3 +1,13 @@
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <iostream>
+#include <map>
+#include <set>
+#include <string>
+#include <utility>
+#include <vector>
+#include <deque>
 #include "document.h"
 #include "read_input_functions.h"
 #include "string_processing.h"
