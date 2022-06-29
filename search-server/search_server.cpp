@@ -1,5 +1,4 @@
 #include "search_server.h"
-
 void SearchServer::AddDocument(int document_id,
                  const std::string& document,
                  DocumentStatus status, 
@@ -11,11 +10,12 @@ void SearchServer::AddDocument(int document_id,
     const double inv_word_count = 1.0 / words.size();
     for (const std::string& word : words) {
         word_to_document_freqs_[word][document_id] += inv_word_count;
+        document_id_to_word_freqs_[document_id][word] += inv_word_count;
     }
     documents_.emplace(document_id, 
                        DocumentData{ComputeAverageRating(ratings), 
                        status});
-    document_ids_.push_back(document_id);
+    document_ids_.insert(document_id);
 }
 
 
@@ -23,11 +23,46 @@ int SearchServer::GetDocumentCount() const {
     return documents_.size();
 }
 
-int SearchServer::GetDocumentId(int index) const {
-    if (index >= 0 && index < GetDocumentCount()) {
-        return document_ids_[index];
+//int SearchServer::GetDocumentId(int index) const {
+//    if (index >= 0 && index < GetDocumentCount()) {
+//        return document_ids_[index];
+//    }
+//    throw std::out_of_range("ID of document is out of range"s);
+//}
+
+std::set<int>::const_iterator SearchServer::begin() {
+    return document_ids_.begin();
+}
+
+std::set<int>::const_iterator SearchServer::end() {
+    return document_ids_.end();
+}
+
+const std::map<std::string, double>& SearchServer
+    ::GetWordFrequencies(int document_id) const {
+    const auto it = document_id_to_word_freqs_.find(document_id);
+    if (it != document_id_to_word_freqs_.end()) {
+        return it->second;
     }
-    throw std::out_of_range("ID of document is out of range"s);
+    return tmp_res_;
+}
+
+void SearchServer::RemoveDocument(int document_id) {
+    if (documents_.count(document_id) > 0) {
+        documents_.erase(document_id);
+    }
+        
+    const auto it = document_id_to_word_freqs_.find(document_id);
+    if (it != document_id_to_word_freqs_.end()) {
+        for (const auto [word, freq] : it->second) {
+            word_to_document_freqs_.at(word).size() > 1 ?
+                word_to_document_freqs_.at(word).erase(document_id) :
+                word_to_document_freqs_.erase(word);
+        }
+        document_id_to_word_freqs_.erase(it->first);
+    }
+
+    document_ids_.erase(document_id);
 }
 
 std::tuple<std::vector<std::string>, DocumentStatus> SearchServer::MatchDocument(const std::string& raw_query,
