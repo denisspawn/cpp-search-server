@@ -83,7 +83,7 @@ void TestMatchingDocumentBySearchRequest() {
         const auto [words, status] = server.MatchDocument(raw_query, doc_id);
         ASSERT_HINT(words.size() > 0, "Vector of matched words must be not empty"s);
         ASSERT_HINT(status == added_status, "Status of matched document must be equal to added document"s);
-        std::vector<std::string> raw_query_words = SplitIntoWords(raw_query);
+        std::vector<std::string_view> raw_query_words = SplitIntoWords(raw_query);
         sort(raw_query_words.begin(), raw_query_words.end());
         ASSERT_HINT(words == raw_query_words, "Vectors of matching and querying should be equal"s);
     }
@@ -94,8 +94,8 @@ void TestMatchingDocumentBySearchRequest() {
         const auto [words, status] = server.MatchDocument(raw_query + minus_word, doc_id);
         ASSERT_HINT(words.empty(), "Vector of matching word should not contain any words if document contains minus words"s);
 
-        std::vector<std::string> splitted_stop_words = SplitIntoWords(stop_words);
-        for (const std::string& stop_word : splitted_stop_words) {
+        std::vector<std::string_view> splitted_stop_words = SplitIntoWords(stop_words);
+        for (const std::string_view stop_word : splitted_stop_words) {
             ASSERT_HINT(!count(words.begin(), words.end(), stop_word), "Matched document should not have any stop word"s);
         }
     }
@@ -137,7 +137,7 @@ void TestPredicateFunction() {
     server.AddDocument(0, "a white cat and a fashionable collar"s, DocumentStatus::ACTUAL, {8, -3});
     server.AddDocument(1, "fluffy cat fluffy tail"s, DocumentStatus::ACTUAL, {7, 2, 7});
     server.AddDocument(2, "kind dog expressive eyes"s, DocumentStatus::ACTUAL, {5, -12, 2, 1});
-    const auto documents = server.FindTopDocuments("fluffy kind cat"s, [](int document_id, DocumentStatus, int) {
+    const auto documents = server.FindTopDocuments(std::execution::par, "fluffy kind cat"s, [](int document_id, DocumentStatus, int) {
         return document_id % 2 == 0;
     });
     ASSERT(documents.size() == 2);
@@ -175,9 +175,9 @@ void TestCorrectRelevanceDocument() {
     const std::vector<int> second_doc_ratings = {9, -7};
     const std::string raw_query = "white cat"s;
 
-    std::map<std::string, std::map<int, double>> word_to_document_freqs;
+    std::map<std::string_view, std::map<int, double>> word_to_document_freqs;
 
-    std::map<int, std::vector<std::string>> doc_id_to_split_words;
+    std::map<int, std::vector<std::string_view>> doc_id_to_split_words;
 
     
     {
@@ -188,22 +188,22 @@ void TestCorrectRelevanceDocument() {
 
         const auto documents = server.FindTopDocuments(raw_query);
         
-        const std::vector<std::string> first_doc_words = SplitIntoWords(first_doc_content);
+        const std::vector<std::string_view> first_doc_words = SplitIntoWords(first_doc_content);
         doc_id_to_split_words[first_doc_id] = first_doc_words;
         
-        const std::vector<std::string> second_doc_words = SplitIntoWords(second_doc_content);
+        const std::vector<std::string_view> second_doc_words = SplitIntoWords(second_doc_content);
         doc_id_to_split_words[second_doc_id] = second_doc_words;
 
         for (const auto& [doc_id, split_words] : doc_id_to_split_words) {
             const double inv_word_count = 1.0 / split_words.size();
-            for (const std::string& word : split_words) {
+            for (const std::string_view word : split_words) {
                 word_to_document_freqs[word][doc_id] += inv_word_count;
             }
         }
 
-        const std::vector<std::string> query_words = SplitIntoWords(raw_query);
+        const std::vector<std::string_view> query_words = SplitIntoWords(raw_query);
         std::map<int, double> document_to_relevance;
-        for (const std::string& q_word : query_words) {
+        for (const std::string_view q_word : query_words) {
             if (word_to_document_freqs.count(q_word) == 0) {
                 continue;
             }

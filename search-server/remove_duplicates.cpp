@@ -1,11 +1,11 @@
 #include "remove_duplicates.h"
 
 void RemoveDuplicates(SearchServer& search_server) {
-    std::set<std::set<std::string>> tmp_str;
+    std::set<std::set<std::string_view>> tmp_str;
     std::vector<int> duplicates_id;
 
     for (auto it = search_server.begin(); it != search_server.end(); ++it) {
-        std::set<std::string> tmp_str_item;
+        std::set<std::string_view> tmp_str_item;
         if (!search_server.GetWordFrequencies(*it).empty()) {
             for (const auto [word, freqs] : search_server.GetWordFrequencies(*it)) {
                 tmp_str_item.insert(word);
